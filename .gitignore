@@ -6,3 +6,4 @@
 _data/
 _out/
 kaggle.json
+docker/res/root/.jupyter/migrated
