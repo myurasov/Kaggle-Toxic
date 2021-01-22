@@ -1,0 +1,7 @@
+.git/
+.ipynb_checkpoints/
+.tensorboard
+.keras/
+_data/
+_out/
+kaggle.json
