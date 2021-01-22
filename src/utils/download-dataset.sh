@@ -1,7 +1,6 @@
 #!/bin/sh
 
-THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-DATA_DIR="${THIS_DIR}/../_data"
+DATA_DIR="/app/_data"
 
 rm -rfv "${DATA_DIR}/src"
 mkdir -pv "${DATA_DIR}/src"
