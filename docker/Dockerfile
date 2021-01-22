@@ -38,11 +38,16 @@ RUN pip install jupyterlab_code_formatter==v1.4.2
 RUN jupyter server extension enable --py jupyterlab_code_formatter
 RUN pip install isort yapf
 
-# plotly
+# plotly jl extension
 RUN pip install "ipywidgets>=7.5"
 RUN jupyter labextension install jupyterlab-plotly@4.14.3 --no-build
 RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager plotlywidget@4.14.3 --no-build
 RUN pip install plotly==4.14.3
+
+# lsp jl extension
+# https://github.com/krassowski/jupyterlab-lsp
+RUN pip install jupyterlab-lsp
+RUN pip install python-language-server[all]
 
 # build jupyter lab assets
 RUN jupyter lab build
