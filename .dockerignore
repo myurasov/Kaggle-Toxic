@@ -24,4 +24,5 @@
 **/values.dev.yaml
 **/.tensorboard
 **/.keras
+**/_data
 README.md
