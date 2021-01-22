@@ -10,6 +10,10 @@ WORKDIR /tmp
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# use bash as default shell
+ENV SHELL=/bin/bash
+ENV force_color_prompt=yes
+
 # path to app modules
 ENV PYTHONPATH=${APP_DIR}:${APP_DIR}/lib:${APP_DIR}/src
 
@@ -50,7 +54,7 @@ RUN echo "cp -r /root/.jupyter ${APP_DIR}/docker/res/root/ && \
 RUN chmod +x /usr/bin/save-jupyter-config
 
 # startup commands
-ARG JUPYTER_TOKEN="mytoken"
+ARG JUPYTER_TOKEN=""
 RUN echo "tensorboard --logdir=${APP_DIR}/.tensorboard --bind_all &" >> /cmd
 RUN echo "jupyter lab --allow-root --ip=0.0.0.0 --no-browser --NotebookApp.token='${JUPYTER_TOKEN}' &" >> /cmd
 RUN echo "sleep infinity" >> /cmd
