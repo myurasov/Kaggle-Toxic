@@ -70,9 +70,12 @@ ENV KAGGLE_CONFIG_DIR ${APP_DIR}
 RUN pip install kaggle
 
 # python packages
-RUN pip install pandas numpy matplotlib \
-    tqdm \
-    bert-for-tf2
+RUN pip install pandas
+RUN pip install numpy
+RUN pip install matplotlib
+RUN pip install tqdm
+RUN pip install bert-for-tf2
+RUN pip install prettytable
 
 # cleanup
 RUN rm -rf /var/lib/apt/lists/*

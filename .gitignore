@@ -1,7 +1,8 @@
 .git/
 .ipynb_checkpoints/
-.tensorboard
+.tensorboard/
 .keras/
+.virtual_documents/
 _data/
 _out/
 kaggle.json
