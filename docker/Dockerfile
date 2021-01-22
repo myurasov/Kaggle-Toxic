@@ -76,6 +76,7 @@ RUN pip install matplotlib
 RUN pip install tqdm
 RUN pip install bert-for-tf2
 RUN pip install prettytable
+RUN pip install venn
 
 # cleanup
 RUN rm -rf /var/lib/apt/lists/*
