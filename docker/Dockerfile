@@ -62,6 +62,7 @@ RUN pip install kaggle
 
 # python packages
 RUN pip install pandas numpy matplotlib \
+    tqdm \
     bert-for-tf2
 
 # copy external resources
