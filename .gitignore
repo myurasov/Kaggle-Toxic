@@ -5,5 +5,6 @@
 .virtual_documents/
 _data/
 _out/
+__*.*
 kaggle.json
 docker/res/root/.jupyter/migrated
