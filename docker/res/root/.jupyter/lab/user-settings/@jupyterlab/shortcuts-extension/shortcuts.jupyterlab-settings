@@ -20,6 +20,13 @@
                 "Ctrl I"
             ],
             "selector": ".jp-Notebook"
+        },
+        {
+            "command": "notebook:restart-run-all",
+            "keys": [
+                "F5"
+            ],
+            "selector": ".jp-Notebook"
         }
     ]
 }
