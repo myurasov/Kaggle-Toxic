@@ -10,7 +10,7 @@ WORKDIR /tmp
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# use bash as default shell
+# use bash as a default shell
 ENV SHELL=/bin/bash
 ENV force_color_prompt=yes
 
@@ -69,14 +69,14 @@ RUN pip install pandas numpy matplotlib \
     tqdm \
     bert-for-tf2
 
-# copy external resources
-COPY docker/res /
-
 # cleanup
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -rf /tmp/*
 RUN jupyter lab clean
 RUN jlpm cache clean
 RUN npm cache clean --force
+
+# copy external resources
+COPY docker/res /
 
 WORKDIR ${APP_DIR}
