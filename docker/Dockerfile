@@ -36,7 +36,7 @@ RUN pip install jupyterlab==v3.0.5
 RUN jupyter labextension install @ryantam626/jupyterlab_code_formatter@v1.4.2 --no-build
 RUN pip install jupyterlab_code_formatter==v1.4.2
 RUN jupyter server extension enable --py jupyterlab_code_formatter
-RUN pip install isort yapf
+RUN pip install isort yapf black
 
 # plotly jl extension
 RUN pip install "ipywidgets>=7.5"

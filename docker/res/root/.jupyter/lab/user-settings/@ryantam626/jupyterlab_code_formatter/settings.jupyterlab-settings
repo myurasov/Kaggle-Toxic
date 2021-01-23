@@ -5,7 +5,7 @@
         "default_formatter": {
             "python": [
                 "isort",
-                "yapf"
+                "black"
             ]
         }
     }
