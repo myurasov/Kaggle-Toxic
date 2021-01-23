@@ -4,6 +4,7 @@ Outputs results in .npy format in _data/preprocessed
 """
 
 import os
+import shutil
 from multiprocessing import Pool, cpu_count
 
 import numpy as np
@@ -39,6 +40,11 @@ def _comment_mapping_fn(text):
     )
 
 
+tokenizer = FullTokenizer(vocab_file=config["DATA_DIR"] + "/bert/vocab.txt")
+max_text_len = config["MAX_TEXT_LENGTH"]
+max_seq_len = config["MAX_SEQ_LENGTH"]
+
+
 # process csv file
 def process_csv(csv_path):
 
@@ -69,20 +75,19 @@ def process_csv(csv_path):
 
 ###
 
-tokenizer = FullTokenizer(vocab_file=config["DATA_DIR"] + "/bert/vocab.txt")
-max_text_len = config["MAX_TEXT_LENGTH"]
-max_seq_len = config["MAX_SEQ_LENGTH"]
+output_dir = config["DATA_DIR"] + "/processsed"
+shutil.rmtree(output_dir, ignore_errors=True)
+os.makedirs(output_dir, exist_ok=True)
 
-###
 
-os.makedirs(config["DATA_DIR"] + "/processsed", exist_ok=True)
+def _process_csv(set_name):
+    input_file = config["DATA_DIR"] + f"/src/{set_name}.csv"
+    print(f"Processing {input_file}...")
+    processed_data = process_csv(input_file)
+    output_file = output_dir + f"/{set_name}.npy"
+    np.save(output_file, processed_data)
+    print("Saved to", output_file)
 
-###
 
-print("Processing train data")
-processed_data = process_csv(config["DATA_DIR"] + "/src/train.csv")
-np.save(config["DATA_DIR"] + "/processsed/train.npy", processed_data)
-
-print("Processing test data")
-processed_data = process_csv(config["DATA_DIR"] + "/src/test.csv")
-np.save(config["DATA_DIR"] + "/processsed/test.npy", processed_data)
+_process_csv("train")
+_process_csv("test")
