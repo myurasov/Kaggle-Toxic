@@ -1,10 +1,11 @@
 #!/bin/sh
 
 DATA_DIR="/app/_data"
+DEST_DIR="${DATA_DIR}/src"
 
-rm -rfv "${DATA_DIR}/src"
-mkdir -pv "${DATA_DIR}/src"
-cd "${DATA_DIR}/src"
+rm -rfv $DEST_DIR
+mkdir -pv $DEST_DIR
+cd $DEST_DIR
 
 kaggle competitions download -c jigsaw-toxic-comment-classification-challenge
 
