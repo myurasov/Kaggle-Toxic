@@ -6,9 +6,8 @@ IMAGE_NAME=`cd "${UP1_DIR}" && echo ${PWD##*/} | tr '[:upper:]' '[:lower:]' | se
 IMAGE_NAME="${IMAGE_NAME}-jupyter"
 JUPYTER_PORT=8888
 TENSORBORAD_PORT=6006
+REBUILD=1
 CMD=""
-
-echo "Building ${IMAGE_NAME}..."
 
 # process named arguments
 while [ $# -gt 0 ]; do
@@ -19,8 +18,11 @@ while [ $# -gt 0 ]; do
     --tensorboard_port=*)
       TENSORBORAD_PORT="${1#*=}"
       ;;
+    --no-rebuild)
+      REBUILD=0
+      ;;
     --help)
-      echo "Usage: docker.sh [--jupyter_port=####|8888] [--tensorboard_port=####|6006] [--help] [command]"
+      echo "Usage: docker.sh [--jupyter_port=####|8888] [--tensorboard_port=####|6006] [--no-rebuild] [--help] [command]"
       exit
       ;;
     *)
@@ -29,9 +31,15 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-docker kill "${IMAGE_NAME}"
+if [ $REBUILD -ge 1 ]
+  then
+    echo "Killing ${IMAGE_NAME}..."
+    docker kill "${IMAGE_NAME}"
 
-docker build -f "${THIS_DIR}/Dockerfile" -t $IMAGE_NAME "${UP1_DIR}" && \
+    echo "Building ${IMAGE_NAME}..."
+    docker build -f "${THIS_DIR}/Dockerfile" -t $IMAGE_NAME "${UP1_DIR}" || exit 1
+fi
+
 docker run --gpus=all --rm ${_OPTIONS_:-'-it'} -p $JUPYTER_PORT:8888  -p $TENSORBORAD_PORT:6006 \
 	-v "${UP1_DIR}:/app" --name="${IMAGE_NAME}" \
 	$IMAGE_NAME $CMD
