@@ -69,6 +69,11 @@ CMD ["sh", "/cmd"]
 ENV KAGGLE_CONFIG_DIR ${APP_DIR}
 RUN pip install kaggle
 
+# google cloud sdk
+RUN curl https://sdk.cloud.google.com | bash -s -- --disable-prompts
+RUN echo "source /root/google-cloud-sdk/completion.bash.inc" >> ~/.bashrc
+RUN echo "source /root/google-cloud-sdk/path.bash.inc" >> ~/.bashrc
+
 # python packages
 RUN pip install pandas
 RUN pip install numpy
