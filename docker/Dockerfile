@@ -49,6 +49,10 @@ RUN pip install plotly==4.14.3
 RUN pip install jupyterlab-lsp
 RUN pip install python-language-server[all]
 
+# jl debugger extension
+RUN pip install xeus-python
+RUN jupyter labextension install @jupyterlab/debugger --no-build
+
 # build jupyter lab assets
 RUN jupyter lab build
 
