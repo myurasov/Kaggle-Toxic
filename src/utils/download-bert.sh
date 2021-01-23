@@ -2,7 +2,7 @@
 
 # download pre-trained BERT from gcloud
 
-DATA_DIR="/app/_data"
+DATA_DIR=`python -c "from src.config import config; print(config['DATA_DIR'])"`
 DEST_DIR="${DATA_DIR}/bert"
 
 MODEL_DIR="2018_10_18"
@@ -15,6 +15,6 @@ cd $DEST_DIR
 for f in "bert_config.json" "vocab.txt" "bert_model.ckpt.meta" \
     "bert_model.ckpt.index" "bert_model.ckpt.data-00000-of-00001"
 do
-    cmd="gsutil cp gs://bert_models/${MODEL_DIR}/${MODEL_NAME}/${f} $DEST_DIR/$MODEL_NAME"
+    cmd="gsutil cp gs://bert_models/${MODEL_DIR}/${MODEL_NAME}/${f} $DEST_DIR/${f}"
     $cmd
 done

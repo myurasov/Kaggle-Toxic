@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DATA_DIR="/app/_data"
+DATA_DIR=`python -c "from src.config import config; print(config['DATA_DIR'])"`
 DEST_DIR="${DATA_DIR}/src"
 
 rm -rfv $DEST_DIR
