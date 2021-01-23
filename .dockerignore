@@ -25,4 +25,6 @@
 **/.tensorboard
 **/.keras
 **/_data
+**/.virtual_documents
+**/.ipynb_checkpoints
 README.md
