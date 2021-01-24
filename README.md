@@ -30,7 +30,7 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 Generated CSV files can be submitted with a following command (modified to include relevant csv file and message):
 
-`$ docker/docker.sh "kaggle competitions submit -c jigsaw-toxic-comment-classification-challenge -f /app/_data/submissions/submission.A.csv -m "Submission A""`
+`$ docker/docker.sh "kaggle competitions submit -c jigsaw-toxic-comment-classification-challenge -f /app/_data/submissions/submission.A.csv -m 'Submission A'"`
 
 ## Starting Jupyter Lab and TensorBoard
 
