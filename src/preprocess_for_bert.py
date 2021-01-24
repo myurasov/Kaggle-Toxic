@@ -67,7 +67,9 @@ def csv_to_npy(csv_path, mapping):
 
     ids = np.array(df.index.to_list())
     X = np.array(X, dtype=np.int32)
-    y_df = df[df.columns[2:]]
+
+    feature_columns = df.columns[1:]
+    y_df = df[feature_columns]
     Y = np.array(y_df.to_dict("split")["data"], dtype=np.uint8)
 
     return {"ids": ids, "X": X, "Y": Y}
@@ -78,9 +80,11 @@ def _process_set(set_name):
     input_file = config["DATA_DIR"] + f"/src/{set_name}.csv"
     print(f"\nProcessing {input_file}...")
     processed_data = csv_to_npy(csv_path=input_file, mapping=_comment_mapping)
-    output_file = output_dir + f"/{set_name}.npy"
-    np.save(output_file, processed_data)
-    print("Saved to", output_file)
+
+    for k, v in processed_data.items():
+        output_file = output_dir + f"/{set_name}.{k}.npy"
+        np.save(output_file, v)
+        print(f"Saved to {output_file} (shape={v.shape}, dtype={v.dtype})")
 
 
 tokenizer = FullTokenizer(vocab_file=config["DATA_DIR"] + "/bert/vocab.txt")
