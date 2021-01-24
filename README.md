@@ -21,3 +21,10 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 ## Starting Jupyter Lab and TensorBoard
 
 `$ docker/docker-forever.sh [--jupyter_port=####|8888] [--tensorboard_port=####|6006]`
+
+## @see
+
+ - https://github.com/google-research/bert
+ - https://arxiv.org/pdf/1810.04805.pdf - BERT
+ - https://arxiv.org/pdf/1902.00751.pdf - Adapter-BERT
+ - https://arxiv.org/pdf/1909.11942.pdf - ALBERT
