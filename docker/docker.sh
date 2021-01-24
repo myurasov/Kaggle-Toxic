@@ -6,6 +6,7 @@ IMAGE_NAME=`cd "${UP1_DIR}" && echo ${PWD##*/} | tr '[:upper:]' '[:lower:]' | se
 JUPYTER_PORT=8888
 TENSORBORAD_PORT=6006
 DOCKER_RUN_FLAGS="it"
+GPUS="all"
 FOREVER=0
 BUILD=1
 KILL=1
@@ -22,6 +23,9 @@ while [ $# -gt 0 ]; do
       ;;
     --image_suffix=*)
       IMAGE_NAME="${IMAGE_NAME}-${1#*=}"
+      ;;
+    --gpus=*)
+      GPUS="${1#*=}"
       ;;
     --forever)
       DOCKER_RUN_FLAGS+="d"
@@ -60,6 +64,6 @@ if [ -z "$CMD" ]
     PORT_MAPPINGS="-p ${JUPYTER_PORT}:8888  -p ${TENSORBORAD_PORT}:6006"
 fi
 
-docker run --gpus=all --rm "-${DOCKER_RUN_FLAGS}" --name="${IMAGE_NAME}" \
+docker run --gpus="${GPUS}" --rm "-${DOCKER_RUN_FLAGS}" --name="${IMAGE_NAME}" \
   -v "${UP1_DIR}:/app" $PORT_MAPPINGS \
   $IMAGE_NAME $CMD
