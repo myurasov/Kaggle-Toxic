@@ -3,9 +3,10 @@
 UP1_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/.. >/dev/null && pwd)"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 IMAGE_NAME=`cd "${UP1_DIR}" && echo ${PWD##*/} | tr '[:upper:]' '[:lower:]' | sed -e 's/[-_ ]//g'`
-IMAGE_NAME="${IMAGE_NAME}-jupyter"
 JUPYTER_PORT=8888
 TENSORBORAD_PORT=6006
+DOCKER_RUN_FLAGS="it"
+FOREVER=0
 BUILD=1
 KILL=1
 CMD=""
@@ -18,6 +19,12 @@ while [ $# -gt 0 ]; do
       ;;
     --tensorboard_port=*)
       TENSORBORAD_PORT="${1#*=}"
+      ;;
+    --image_suffix=*)
+      IMAGE_NAME="${IMAGE_NAME}-${1#*=}"
+      ;;
+    --forever)
+      DOCKER_RUN_FLAGS+="d"
       ;;
     --no-kill)
       KILL=0
@@ -47,6 +54,12 @@ if [ $BUILD -ge 1 ]
     docker build -f "${THIS_DIR}/Dockerfile" -t $IMAGE_NAME "${UP1_DIR}" || exit 1
 fi
 
-docker run --gpus=all --rm ${_OPTIONS_:-'-it'} -p $JUPYTER_PORT:8888  -p $TENSORBORAD_PORT:6006 \
-	-v "${UP1_DIR}:/app" --name="${IMAGE_NAME}" \
-	$IMAGE_NAME $CMD
+# only map jupyter/tensorboard ports if command is not specified
+if [ -z "$CMD" ]
+  then
+    PORT_MAPPINGS="-p ${JUPYTER_PORT}:8888  -p ${TENSORBORAD_PORT}:6006"
+fi
+
+docker run --gpus=all --rm "-${DOCKER_RUN_FLAGS}" --name="${IMAGE_NAME}" \
+  -v "${UP1_DIR}:/app" $PORT_MAPPINGS \
+  $IMAGE_NAME $CMD
