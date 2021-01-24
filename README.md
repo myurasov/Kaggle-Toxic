@@ -32,6 +32,8 @@ Generated CSV files can be submitted with a following command (modified to inclu
 
 `$ docker/docker.sh "kaggle competitions submit -c jigsaw-toxic-comment-classification-challenge -f /app/_data/submissions/submission.A.csv -m 'Submission A'"`
 
+`kaggle.json` with valid API token needs to be placed in the application directory prior to downloading data or uploading submissions.
+
 ## Starting Jupyter Lab and TensorBoard
 
 `$ docker/docker-forever.sh [--jupyter_port=####|8888] [--tensorboard_port=####|6006]`
