@@ -2,7 +2,7 @@
 
 # download pre-trained BERT from gcloud
 
-DATA_DIR=`python -c "import src.config import config as c; print(config['DATA_DIR'])"`
+DATA_DIR=`python -c "from src.config import config; print(config['DATA_DIR'])"`
 MODEL_PATH=`python -c "from src.config import config; print(config['GS_BERT_MODEL_PATH'])"`
 DEST_DIR="${DATA_DIR}/bert"
 
