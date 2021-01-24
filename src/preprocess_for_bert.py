@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 """
 Convert CSV files to BERT format
 Outputs results in .npy format in _data/preprocessed

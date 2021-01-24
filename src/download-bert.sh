@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # download pre-trained BERT from gcloud
 
