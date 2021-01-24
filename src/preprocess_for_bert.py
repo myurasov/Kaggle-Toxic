@@ -12,27 +12,10 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 import pandas as pd
 from bert.tokenization.bert_tokenization import FullTokenizer
+from lib.bert_utils import preprocess_text_for_bert
 from tqdm import tqdm
 
 from src.config import config
-
-
-# convert piece of text into tokenized version for bert
-def preprocess_text_for_bert(tokenizer, text, max_text_len, max_seq_len):
-
-    # tokenize
-    tokens = tokenizer.tokenize(text[:max_text_len])
-    tokens = tokens[: max_seq_len - 2]
-    tokens = ["[CLS]"] + tokens + ["[SEP]"]
-    token_ids = tokenizer.convert_tokens_to_ids(tokens)
-
-    assert len(token_ids) <= max_seq_len
-
-    # pad
-    token_ids += [0] * (max_seq_len - len(token_ids))
-
-    assert len(token_ids) == max_seq_len
-    return token_ids
 
 
 # mapping of comments->tokenized inputs
