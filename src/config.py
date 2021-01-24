@@ -3,10 +3,10 @@
 config = {}
 
 # data location
-config['DATA_DIR'] = '/app/_data'
+config["DATA_DIR"] = "/app/_data"
 
 # max length of comments (chars)
-config['MAX_TEXT_LENGTH'] = 1024
+config["MAX_TEXT_LENGTH"] = 5120
 
 # max input sequence length (tokens)
-config['MAX_SEQ_LENGTH'] = 128
+config["MAX_SEQ_LENGTH"] = 128

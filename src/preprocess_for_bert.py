@@ -24,9 +24,12 @@ def preprocess_text_for_bert(tokenizer, text, max_text_len, max_seq_len):
     tokens = ["[CLS]"] + tokens + ["[SEP]"]
     token_ids = tokenizer.convert_tokens_to_ids(tokens)
 
+    assert len(token_ids) <= max_seq_len
+
     # pad
     token_ids += [0] * (max_seq_len - len(token_ids))
 
+    assert len(token_ids) == max_seq_len
     return token_ids
 
 
@@ -41,7 +44,7 @@ def _comment_mapping(text):
 
 
 # convert csv file to numpy data
-def csv_to_npy(csv_path):
+def csv_to_npy(csv_path, mapping):
 
     df = pd.read_csv(csv_path)
     df = df.set_index("id")
@@ -53,7 +56,7 @@ def csv_to_npy(csv_path):
         X = list(
             tqdm(
                 pool.imap(
-                    _comment_mapping,
+                    mapping,
                     comments,
                 ),
                 total=len(df),
@@ -71,8 +74,8 @@ def csv_to_npy(csv_path):
 # process train/test dataset
 def _process_set(set_name):
     input_file = config["DATA_DIR"] + f"/src/{set_name}.csv"
-    print(f"Processing {input_file}...")
-    processed_data = csv_to_npy(input_file)
+    print(f"\nProcessing {input_file}...")
+    processed_data = csv_to_npy(csv_path=input_file, mapping=_comment_mapping)
     output_file = output_dir + f"/{set_name}.npy"
     np.save(output_file, processed_data)
     print("Saved to", output_file)
@@ -80,7 +83,7 @@ def _process_set(set_name):
 
 tokenizer = FullTokenizer(vocab_file=config["DATA_DIR"] + "/bert/vocab.txt")
 
-output_dir = config["DATA_DIR"] + "/processsed"
+output_dir = config["DATA_DIR"] + "/processsed_for_bert"
 shutil.rmtree(output_dir, ignore_errors=True)
 os.makedirs(output_dir, exist_ok=True)
 
