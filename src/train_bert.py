@@ -27,7 +27,7 @@ EARLY_STOP_PATIENCE = 20
 # read cli arguments
 
 parser = argparse.ArgumentParser(
-    description="Train BERT-based Multiclass Classifier",
+    description="Train BERT-based classifier",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
 )
 
@@ -35,9 +35,9 @@ parser.add_argument("--run", type=str, default=RUN)
 parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
 parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
 parser.add_argument("--batch", type=int, default=BATCH_SIZE)
-parser.add_argument("--dataset_size_limit", type=int, default=None)
-args = parser.parse_args()
+parser.add_argument("--max_items", type=int, default=None)
 
+args = parser.parse_args()
 print("Using arguments: ", args)
 
 # prepare model
@@ -56,14 +56,18 @@ model.compile(
     ],
 )
 
-# load trainign data
-train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy")
-train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy")
+# load training data
+train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy").astype(
+    np.int32
+)
+train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy").astype(
+    np.float32
+)
 
-# limit maxc dataset size
-if args.dataset_size_limit is not None:
-    train_X = train_X[: args.dataset_size_limit]
-    train_Y = train_Y[: args.dataset_size_limit]
+# limit max dataset size
+if args.max_items is not None:
+    train_X = train_X[: args.max_items]
+    train_Y = train_Y[: args.max_items]
 
 # tensorboard log dir
 tb_log_dir = f"/app/.tensorboard/{args.run}"
@@ -94,7 +98,7 @@ model.fit(
 # save trained model
 
 output_dir = config["DATA_DIR"] + "/saved_models"
-model_path = output_dir + f"/model_bert.{args.run}.h5"
+model_path = output_dir + f"/model_bert.{args.run}.tf"
 os.makedirs(output_dir, exist_ok=True)
-model.save(model_path, overwrite=True)
-print(f"Model saved to {model_path}")
+model.save(model_path, overwrite=True, save_format="tf", include_optimizer=True)
+print(f"* Model saved to {model_path}")
