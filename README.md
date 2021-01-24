@@ -18,6 +18,10 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 `$ docker/docker.sh "src/preprocess_for_bert.py"`
 
+### Train BERT-based Classifier
+
+`$ docker/docker.sh "src/train_bert.py [--run] [--epochs] [--warmup_epochs] [--batch] [--dataset_size_limit]"`
+
 ## Starting Jupyter Lab and TensorBoard
 
 `$ docker/docker-forever.sh [--jupyter_port=####|8888] [--tensorboard_port=####|6006]`
