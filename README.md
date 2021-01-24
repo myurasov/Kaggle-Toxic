@@ -4,7 +4,7 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 ## Setup
 
-### Dataset Download
+### Download Dataset
 
 `$ docker/docker.sh "src/utils/download-dataset.sh"`
 
@@ -13,6 +13,10 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 ### Download Pre-trained BERT
 
 `$ docker/docker.sh "src/utils/download-bert.sh"`
+
+### Prepare Dataset for BERT
+
+`$ docker/docker.sh "python src/preprocess_for_bert.py"`
 
 ## Starting Jupyter Lab and TensorBoard
 
