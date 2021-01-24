@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import bert
@@ -62,10 +63,29 @@ def build_bert_classifier_model(bert_model_dir, max_seq_len):
     # load the pre-trained model weights
     bert.loader.load_stock_weights(bert_layer, bert_ckpt_path)
 
-    model.compile(
-        optimizer=keras.optimizers.Adam(),
-        loss=keras.losses.BinaryCrossentropy(),
-        metrics=[keras.metrics.BinaryCrossentropy(name="acc")],
-    )
-
     return model
+
+
+def create_bert_learning_rate_scheduler(
+    max_learn_rate=1e-5,
+    end_learn_rate=1e-7,
+    warmup_epochs=20,
+    epochs_total=50,
+):
+    """
+    Create LR scheduler for BERT-based multiclass classifier
+    @see https://www.desmos.com/calculator/klvwfuidie
+    """
+
+    def _lr_scheduler(epoch):
+        if epoch < warmup_epochs:
+            res = (max_learn_rate / warmup_epochs) * (epoch + 1)
+        else:
+            res = max_learn_rate * math.exp(
+                math.log(end_learn_rate / max_learn_rate)
+                * (epoch - warmup_epochs + 1)
+                / (epochs_total - warmup_epochs + 1)
+            )
+        return float(res)
+
+    return keras.callbacks.LearningRateScheduler(_lr_scheduler, verbose=1)
