@@ -96,6 +96,9 @@ RUN jupyter lab clean
 RUN jlpm cache clean
 RUN npm cache clean --force
 
+# supress too many messages from tf
+ENV TF_CPP_MIN_LOG_LEVEL=3
+
 # copy external resources
 COPY docker/res /
 
