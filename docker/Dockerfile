@@ -89,6 +89,10 @@ RUN echo ". /opt/google-cloud-sdk/completion.bash.inc" >> ~/.bashrc
 RUN echo ". /opt/google-cloud-sdk/path.bash.inc" >> ~/.bashrc
 ENV PATH="${PATH}:/opt/google-cloud-sdk/bin"
 
+# horovod
+RUN pip install horovod[keras,tensorflow]
+RUN horovodrun --check-build
+
 # cleanup
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -rf /tmp/*
