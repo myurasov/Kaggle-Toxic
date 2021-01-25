@@ -16,13 +16,13 @@ from src.config import config
 # settings
 
 RUN = "A"
-LR_END = 1e-7
-LR_START = 1e-5
+LR_END = 1e-7 / 2
+LR_START = 1e-5 / 2
 BATCH_SIZE = 48
 TOTAL_EPOCHS = 50
-WARMUP_EPOCHS = 20
+WARMUP_EPOCHS = 10
 VALIDATION_SPLIT = 0.1
-EARLY_STOP_PATIENCE = 20
+EARLY_STOP_PATIENCE = 10
 
 # read cli arguments
 
@@ -89,7 +89,7 @@ model.fit(
             epochs_total=args.epochs,
         ),
         keras.callbacks.EarlyStopping(
-            patience=EARLY_STOP_PATIENCE, restore_best_weights=True
+            patience=EARLY_STOP_PATIENCE, restore_best_weights=True, verbose=1
         ),
         keras.callbacks.TensorBoard(log_dir=tb_log_dir),
     ],
