@@ -77,10 +77,10 @@ shutil.rmtree(tb_log_dir, ignore_errors=True)
 model.fit(
     x=train_X,
     y=train_Y,
-    validation_split=VALIDATION_SPLIT,
-    batch_size=args.batch,
-    epochs=args.epochs,
     shuffle=True,
+    epochs=args.epochs,
+    batch_size=args.batch,
+    validation_split=VALIDATION_SPLIT,
     callbacks=[
         create_bert_learning_rate_scheduler(
             max_learn_rate=LR_START,
