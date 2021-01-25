@@ -20,11 +20,36 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 ### Train BERT-based Classifier
 
-`$ docker/docker.sh "src/train_bert.py [--run] [--epochs] [--warmup_epochs] [--batch] [--max_items]"`
+`$ docker/docker.sh "src/train_bert.py [arguments]"`
+
+Options available:
+
+<pre>
+-h, --help
+--run RUN
+--max_items MAX_ITEMS
+--epochs EPOCHS
+--warmup_epochs WARMUP_EPOCHS
+--batch BATCH
+--lr_start LR_START
+--lr_end LR_END
+--val_split VAL_SPLIT
+--early_stop_patience EARLY_STOP_PATIENCE
+</pre>
 
 ### Generating submission with BERT-based Classifier
 
-`$ docker/docker.sh "src/infer_bert.py  [--model_file] [--submission_file] [--batch] [--max_items]"`
+`$ docker/docker.sh "src/infer_bert.py  [arguments]"`
+
+Options available:
+
+<pre>
+-h, --help
+--model_file MODEL_FILE
+--submission_file SUBMISSION_FILE
+--batch BATCH
+--max_items MAX_ITEMS
+</pre>
 
 ## Starting Jupyter Lab and TensorBoard
 

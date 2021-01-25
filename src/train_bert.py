@@ -3,6 +3,8 @@
 import argparse
 import os
 import shutil
+from datetime import datetime
+from pprint import pformat, pprint
 
 import numpy as np
 from lib.bert_utils import (
@@ -16,12 +18,12 @@ from src.config import config
 # settings
 
 RUN = "A"
-LR_END = 1e-7 / 2
-LR_START = 1e-5 / 2
+LR_END = 5e-8
+LR_START = 5e-6
+VAL_SPLIT = 0.1
 BATCH_SIZE = 48
 TOTAL_EPOCHS = 50
 WARMUP_EPOCHS = 10
-VALIDATION_SPLIT = 0.1
 EARLY_STOP_PATIENCE = 10
 
 # read cli arguments
@@ -32,15 +34,19 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument("--run", type=str, default=RUN)
+parser.add_argument("--max_items", type=int, default=None)
 parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
 parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
 parser.add_argument("--batch", type=int, default=BATCH_SIZE)
-parser.add_argument("--max_items", type=int, default=None)
 parser.add_argument("--lr_start", type=int, default=LR_START)
 parser.add_argument("--lr_end", type=int, default=LR_END)
+parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
+parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
 
 args = parser.parse_args()
-print("Using arguments: ", args)
+
+print("* Arguments: ")
+pprint(vars(args))
 
 # prepare model
 
@@ -68,6 +74,12 @@ train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy").astyp
 
 # limit max dataset size
 if args.max_items is not None:
+
+    # shuffle before limiting
+    indexes = np.random.permutation(len(train_X))
+    train_X = train_X[indexes]
+    train_Y = train_Y[indexes]
+
     train_X = train_X[: args.max_items]
     train_Y = train_Y[: args.max_items]
 
@@ -82,7 +94,7 @@ model.fit(
     shuffle=True,
     epochs=args.epochs,
     batch_size=args.batch,
-    validation_split=VALIDATION_SPLIT,
+    validation_split=args.val_split,
     callbacks=[
         create_bert_learning_rate_scheduler(
             max_learn_rate=args.lr_start,
@@ -91,7 +103,7 @@ model.fit(
             epochs_total=args.epochs,
         ),
         keras.callbacks.EarlyStopping(
-            patience=EARLY_STOP_PATIENCE, restore_best_weights=True, verbose=1
+            patience=args.early_stop_patience, restore_best_weights=True, verbose=1
         ),
         keras.callbacks.TensorBoard(log_dir=tb_log_dir),
     ],
@@ -104,3 +116,11 @@ model_path = output_dir + f"/model_bert.{args.run}.tf"
 os.makedirs(output_dir, exist_ok=True)
 model.save(model_path, overwrite=True, save_format="tf", include_optimizer=True)
 print(f"* Model saved to {model_path}")
+
+# save run info for later reference
+
+info_path = model_path + "_info.txt"
+print(
+    f"Date:\n\n{datetime.now()} UTC\n\nArguments:\n\n{pformat(vars(args))}",
+    file=open(info_path, "w"),
+)
