@@ -71,6 +71,7 @@ def create_bert_learning_rate_scheduler(
     end_learn_rate=1e-7,
     warmup_epochs=20,
     epochs_total=50,
+    horovod_factor=1.0,  # if using horovod, lr should be multiplied by number of GPUs
 ):
     """
     Create LR scheduler for BERT-based multiclass classifier
