@@ -36,6 +36,8 @@ parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
 parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
 parser.add_argument("--batch", type=int, default=BATCH_SIZE)
 parser.add_argument("--max_items", type=int, default=None)
+parser.add_argument("--lr_start", type=int, default=LR_START)
+parser.add_argument("--lr_end", type=int, default=LR_END)
 
 args = parser.parse_args()
 print("Using arguments: ", args)
@@ -83,8 +85,8 @@ model.fit(
     validation_split=VALIDATION_SPLIT,
     callbacks=[
         create_bert_learning_rate_scheduler(
-            max_learn_rate=LR_START,
-            end_learn_rate=LR_END,
+            max_learn_rate=args.lr_start,
+            end_learn_rate=args.lr_end,
             warmup_epochs=args.warmup_epochs,
             epochs_total=args.epochs,
         ),
