@@ -36,6 +36,8 @@ model.compile(
     ],
 )
 
+model.summary()
+
 # fit
 
 model.fit(
