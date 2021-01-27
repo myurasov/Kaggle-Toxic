@@ -52,7 +52,10 @@ def bert_build_model(bert_model_dir, max_seq_len):
     x = bert_layer(input_token_ids)
 
     #  classification head
-    x = keras.layers.Lambda(lambda seq: seq[:, 0, :])(x)
+    # x = keras.layers.Lambda(lambda seq: seq[:, 0, :])(x)
+    x = keras.layers.Flatten()(x)
+    x = keras.layers.Dropout(0.5)(x)
+    x = keras.layers.Dense(units=768, activation="relu")(x)
     x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Dense(units=768, activation="relu")(x)
     x = keras.layers.Dropout(0.5)(x)
@@ -119,8 +122,8 @@ def bert_get_training_arguments(
     parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
     parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
     parser.add_argument("--batch", type=int, default=BATCH_SIZE)
-    parser.add_argument("--lr_start", type=int, default=LR_START)
-    parser.add_argument("--lr_end", type=int, default=LR_END)
+    parser.add_argument("--lr_start", type=float, default=LR_START)
+    parser.add_argument("--lr_end", type=float, default=LR_END)
     parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
     parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
 
