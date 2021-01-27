@@ -1,11 +1,15 @@
+import argparse
 import math
 from pathlib import Path
+from pprint import pformat
 
 import bert
+import numpy as np
+from src.config import config
 from tensorflow import keras
 
 
-def preprocess_text_for_bert(tokenizer, text, max_text_len, max_seq_len):
+def bert_preprocess_text(tokenizer, text, max_text_len, max_seq_len):
     """
     Convert piece of text into tokenized version for bert
     """
@@ -25,7 +29,7 @@ def preprocess_text_for_bert(tokenizer, text, max_text_len, max_seq_len):
     return token_ids
 
 
-def build_bert_classifier_model(bert_model_dir, max_seq_len):
+def bert_build_model(bert_model_dir, max_seq_len):
     """
     Build multi-class classifier model based on pre-trained bert
     """
@@ -66,7 +70,7 @@ def build_bert_classifier_model(bert_model_dir, max_seq_len):
     return model
 
 
-def create_bert_learning_rate_scheduler(
+def bert_create_lr_scheduler(
     max_learn_rate=1e-5,
     end_learn_rate=1e-7,
     warmup_epochs=20,
@@ -90,3 +94,63 @@ def create_bert_learning_rate_scheduler(
         return float(res)
 
     return keras.callbacks.LearningRateScheduler(_lr_scheduler, verbose=1)
+
+
+# read cli arguments for bert training
+def bert_get_training_arguments(
+    description="Train BERT-based classifier",
+    RUN="A",
+    LR_END=5e-8,
+    LR_START=5e-6,
+    VAL_SPLIT=0.1,
+    BATCH_SIZE=48,
+    TOTAL_EPOCHS=50,
+    WARMUP_EPOCHS=10,
+    EARLY_STOP_PATIENCE=10,
+):
+
+    parser = argparse.ArgumentParser(
+        description=description,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+
+    parser.add_argument("--run", type=str, default=RUN)
+    parser.add_argument("--max_items", type=int, default=None)
+    parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
+    parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
+    parser.add_argument("--batch", type=int, default=BATCH_SIZE)
+    parser.add_argument("--lr_start", type=int, default=LR_START)
+    parser.add_argument("--lr_end", type=int, default=LR_END)
+    parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
+    parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
+
+    args = parser.parse_args()
+
+    # display arguments
+    print(f"* Arguments:\n{pformat(vars(args))}")
+
+    return args
+
+
+# load training data
+def bert_load_training_data(max_items=None):
+
+    train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy").astype(
+        np.int32
+    )
+    train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy").astype(
+        np.float32
+    )
+
+    # limit max dataset size
+    if max_items is not None:
+
+        # shuffle before limiting
+        indexes = np.random.permutation(len(train_X))
+        train_X = train_X[indexes]
+        train_Y = train_Y[indexes]
+
+        train_X = train_X[:max_items]
+        train_Y = train_Y[:max_items]
+
+    return train_X, train_Y

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from bert.tokenization.bert_tokenization import FullTokenizer
 from src.config import config
-from lib.bert_utils import preprocess_text_for_bert
+from lib.bert_utils import bert_preprocess_text
 
 SKIP_LONG = False
 SKIP_LONG_MESSAGE = "Skipping long tests"
@@ -75,7 +75,7 @@ class Validate_Bert_DATA(unittest.TestCase):
             row = self.train_df.values[i]
 
             comment_text = row[0]
-            pp = preprocess_text_for_bert(
+            pp = bert_preprocess_text(
                 tokenizer=tokenizer,
                 text=comment_text,
                 max_text_len=config["MAX_TEXT_LENGTH"],
@@ -89,7 +89,7 @@ class Validate_Bert_DATA(unittest.TestCase):
             row = self.test_df.values[i]
 
             comment_text = row[0]
-            pp = preprocess_text_for_bert(
+            pp = bert_preprocess_text(
                 tokenizer=tokenizer,
                 text=comment_text,
                 max_text_len=config["MAX_TEXT_LENGTH"],

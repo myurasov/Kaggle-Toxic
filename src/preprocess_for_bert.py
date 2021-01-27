@@ -12,7 +12,7 @@ from multiprocessing import Pool, cpu_count
 import numpy as np
 import pandas as pd
 from bert.tokenization.bert_tokenization import FullTokenizer
-from lib.bert_utils import preprocess_text_for_bert
+from lib.bert_utils import bert_preprocess_text
 from tqdm import tqdm
 
 from src.config import config
@@ -20,7 +20,7 @@ from src.config import config
 
 # mapping of comments->tokenized inputs
 def _comment_mapping(text):
-    return preprocess_text_for_bert(
+    return bert_preprocess_text(
         tokenizer=tokenizer,
         max_text_len=config["MAX_TEXT_LENGTH"],
         max_seq_len=config["MAX_SEQ_LENGTH"],

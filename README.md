@@ -20,7 +20,7 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 ### Train BERT-based Classifier
 
-`$ docker/docker.sh "src/train_bert.py [arguments]"`
+`$ docker/docker.sh "src/train_bert-[variant].py [arguments]"`
 
 Options available:
 

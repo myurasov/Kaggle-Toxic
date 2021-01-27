@@ -11,8 +11,8 @@ import horovod.tensorflow.keras as hvd
 import numpy as np
 import tensorflow as tf
 from lib.bert_utils import (
-    build_bert_classifier_model,
-    create_bert_learning_rate_scheduler,
+    bert_build_model,
+    bert_create_lr_scheduler,
 )
 from tensorflow import keras
 
@@ -73,11 +73,11 @@ print(f"* Horovod: args.epochs adjusted to {args.epochs}")
 # endregion
 
 # display arguments
-print("* Arguments:\n{pformat(vars(args))}")
+print(f"* Arguments:\n{pformat(vars(args))}")
 
 # prepare model
 
-model = build_bert_classifier_model(
+model = bert_build_model(
     bert_model_dir=config["DATA_DIR"] + "/bert", max_seq_len=config["MAX_SEQ_LENGTH"]
 )
 
@@ -124,7 +124,7 @@ model.fit(
     batch_size=args.batch,
     validation_split=args.val_split,
     callbacks=[
-        create_bert_learning_rate_scheduler(
+        bert_create_lr_scheduler(
             max_learn_rate=args.lr_start,
             end_learn_rate=args.lr_end,
             warmup_epochs=args.warmup_epochs,
