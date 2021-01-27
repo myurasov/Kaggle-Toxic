@@ -1,15 +1,12 @@
 #!/usr/bin/python
 
 import argparse
-import math
 import os
 import shutil
 from datetime import datetime
 from pprint import pformat, pprint
 
-import horovod.tensorflow.keras as hvd
 import numpy as np
-import tensorflow as tf
 from lib.bert_utils import (
     build_bert_classifier_model,
     create_bert_learning_rate_scheduler,
@@ -28,7 +25,6 @@ BATCH_SIZE = 48
 TOTAL_EPOCHS = 50
 WARMUP_EPOCHS = 10
 EARLY_STOP_PATIENCE = 10
-
 
 # read cli arguments
 
@@ -49,31 +45,8 @@ parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIEN
 
 args = parser.parse_args()
 
-
-# region:horovod_init
-
-hvd.init()
-
-gpus = tf.config.experimental.list_physical_devices("GPU")
-print(f"* Horovod: Using {len(gpus)} GPU(s)")
-
-# configure gpus
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-
-# pin GPU to be used to process local rank
-if gpus:
-    tf.config.experimental.set_visible_devices(gpus[hvd.local_rank()], "GPU")
-
-
-# adjust number of epochs based on number of GPUs.
-args.epochs = int(math.ceil(args.epochs / hvd.size()))
-print(f"* Horovod: args.epochs adjusted to {args.epochs}")
-
-# endregion
-
-# display arguments
-print("* Arguments:\n{pformat(vars(args))}")
+print("* Arguments: ")
+pprint(vars(args))
 
 # prepare model
 
@@ -114,7 +87,6 @@ if args.max_items is not None:
 tb_log_dir = f"/app/.tensorboard/{args.run}"
 shutil.rmtree(tb_log_dir, ignore_errors=True)
 
-
 # fit
 model.fit(
     x=train_X,
@@ -129,7 +101,6 @@ model.fit(
             end_learn_rate=args.lr_end,
             warmup_epochs=args.warmup_epochs,
             epochs_total=args.epochs,
-            horovod_factor=hvd.size()
         ),
         keras.callbacks.EarlyStopping(
             patience=args.early_stop_patience, restore_best_weights=True, verbose=1
