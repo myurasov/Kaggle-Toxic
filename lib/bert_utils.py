@@ -120,7 +120,6 @@ def bert_get_training_arguments(
     parser.add_argument("--run", type=str, default=RUN)
     parser.add_argument("--max_items", type=int, default=None)
     parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
-    parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
     parser.add_argument("--batch", type=int, default=BATCH_SIZE)
     parser.add_argument("--lr_start", type=float, default=LR_START)
     parser.add_argument("--lr_decay", type=float, default=LR_DECAY)
@@ -129,9 +128,6 @@ def bert_get_training_arguments(
     parser.add_argument("--samples_per_epoch", type=int, default=SAMPLES_PER_EPOCH)
 
     args = parser.parse_args()
-
-    # adjust samples per epoch to include integer number of batches
-    args.samples_per_epoch -= args.samples_per_epoch % args.batch
 
     # display arguments
     print(f"* Arguments:\n{pformat(vars(args))}")
@@ -142,27 +138,31 @@ def bert_get_training_arguments(
 # load training data
 def bert_load_training_data(max_items=None, shuffle=True, val_split=0.1):
 
-    train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy").astype(
-        np.int32
-    )
-    train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy").astype(
-        np.float32
-    )
+    X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy")
+    X = X.astype(np.int32)
+
+    Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy")
+    Y = Y.astype(np.float32)
 
     # shuffle
     if shuffle:
-        indexes = np.random.permutation(len(train_X))
-        train_X = train_X[indexes]
-        train_Y = train_Y[indexes]
+        indexes = np.random.permutation(len(X))
+        X = X[indexes]
+        Y = Y[indexes]
 
     # limit max dataset size
     if max_items is not None:
-        train_X = train_X[:max_items]
-        train_Y = train_Y[:max_items]
+        X = X[:max_items]
+        Y = Y[:max_items]
 
     # split into val/train sets
-    val_len = int(len(train_X) * val_split)
-    train_X, val_X = train_X[:-val_len], train_X[-val_len:]
-    train_Y, val_Y = train_Y[:-val_len], train_Y[-val_len:]
+    val_len = int(len(X) * val_split)
+    train_X, val_X = X[:-val_len], X[-val_len:]
+    train_Y, val_Y = Y[:-val_len], Y[-val_len:]
+
+    print(
+        f"* Training dataset length: {len(train_X)}\n"
+        + f"* Validation dataset length: {len(val_X)}"
+    )
 
     return train_X, train_Y, val_X, val_Y

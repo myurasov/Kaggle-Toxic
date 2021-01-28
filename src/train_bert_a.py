@@ -2,7 +2,6 @@
 
 from lib.bert_utils import (
     bert_build_model,
-    bert_create_lr_scheduler,
     bert_get_training_arguments,
     bert_load_training_data,
 )
@@ -29,7 +28,11 @@ model = bert_build_model(
 )
 
 model.compile(
-    optimizer=keras.optimizers.Adam(),
+    optimizer=keras.optimizers.Adam(
+        learning_rate=keras.optimizers.schedules.ExponentialDecay(
+            args.lr_start, args.samples_per_epoch, decay_rate=args.lr_decay
+        )
+    ),
     loss=keras.losses.BinaryCrossentropy(),
     metrics=[
         keras.metrics.AUC(
@@ -51,9 +54,6 @@ model.fit(
     validation_data=(val_X, val_Y),
     steps_per_epoch=args.samples_per_epoch // args.batch,
     callbacks=[
-        keras.optimizers.schedules.ExponentialDecay(
-            args.lr_start, args.samples_per_epoch, decay_rate=args.lr_decay
-        ),
         keras.callbacks.EarlyStopping(
             patience=args.early_stop_patience, restore_best_weights=True, verbose=1
         ),
