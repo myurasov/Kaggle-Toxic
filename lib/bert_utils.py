@@ -102,7 +102,7 @@ def bert_create_lr_scheduler(
 def bert_get_training_arguments(
     description="Train BERT-based classifier",
     RUN="A",
-    LR_END=5e-8,
+    LR_DECAY=0.96,
     LR_START=5e-6,
     VAL_SPLIT=0.1,
     BATCH_SIZE=48,
@@ -123,7 +123,7 @@ def bert_get_training_arguments(
     parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
     parser.add_argument("--batch", type=int, default=BATCH_SIZE)
     parser.add_argument("--lr_start", type=float, default=LR_START)
-    parser.add_argument("--lr_end", type=float, default=LR_END)
+    parser.add_argument("--lr_decay", type=float, default=LR_DECAY)
     parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
     parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
     parser.add_argument("--samples_per_epoch", type=int, default=SAMPLES_PER_EPOCH)

@@ -51,11 +51,8 @@ model.fit(
     validation_data=(val_X, val_Y),
     steps_per_epoch=args.samples_per_epoch // args.batch,
     callbacks=[
-        bert_create_lr_scheduler(
-            max_learn_rate=args.lr_start,
-            end_learn_rate=args.lr_end,
-            warmup_epochs=args.warmup_epochs,
-            epochs_total=args.epochs,
+        keras.optimizers.schedules.ExponentialDecay(
+            args.lr_start, args.samples_per_epoch, decay_rate=args.lr_decay
         ),
         keras.callbacks.EarlyStopping(
             patience=args.early_stop_patience, restore_best_weights=True, verbose=1
