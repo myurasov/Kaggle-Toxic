@@ -52,8 +52,7 @@ def bert_build_model(bert_model_dir, max_seq_len):
     x = bert_layer(input_token_ids)
 
     #  classification head
-    # x = keras.layers.Lambda(lambda seq: seq[:, 0, :])(x)
-    x = keras.layers.Flatten()(x)
+    x = keras.layers.Lambda(lambda seq: seq[:, 0, :])(x)
     x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Dense(units=768, activation="relu")(x)
     x = keras.layers.Dropout(0.5)(x)
