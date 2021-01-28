@@ -109,6 +109,7 @@ def bert_get_training_arguments(
     TOTAL_EPOCHS=50,
     WARMUP_EPOCHS=10,
     EARLY_STOP_PATIENCE=10,
+    SAMPLES_PER_EPOCH=50000,
 ):
 
     parser = argparse.ArgumentParser(
@@ -125,8 +126,12 @@ def bert_get_training_arguments(
     parser.add_argument("--lr_end", type=float, default=LR_END)
     parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
     parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
+    parser.add_argument("--samples_per_epoch", type=int, default=SAMPLES_PER_EPOCH)
 
     args = parser.parse_args()
+
+    # adjust samples per epoch to include integer number of batches
+    args.samples_per_epoch -= args.samples_per_epoch % args.batch
 
     # display arguments
     print(f"* Arguments:\n{pformat(vars(args))}")
@@ -135,7 +140,7 @@ def bert_get_training_arguments(
 
 
 # load training data
-def bert_load_training_data(max_items=None):
+def bert_load_training_data(max_items=None, shuffle=True, val_split=0.1):
 
     train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy").astype(
         np.int32
@@ -144,15 +149,20 @@ def bert_load_training_data(max_items=None):
         np.float32
     )
 
-    # limit max dataset size
-    if max_items is not None:
-
-        # shuffle before limiting
+    # shuffle
+    if shuffle:
         indexes = np.random.permutation(len(train_X))
         train_X = train_X[indexes]
         train_Y = train_Y[indexes]
 
+    # limit max dataset size
+    if max_items is not None:
         train_X = train_X[:max_items]
         train_Y = train_Y[:max_items]
 
-    return train_X, train_Y
+    # split into val/train sets
+    val_len = int(len(train_X) * val_split)
+    train_X, val_X = train_X[:-val_len], train_X[-val_len:]
+    train_Y, val_Y = train_Y[:-val_len], train_Y[-val_len:]
+
+    return train_X, train_Y, val_X, val_Y

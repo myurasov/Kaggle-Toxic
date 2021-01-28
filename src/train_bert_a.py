@@ -18,7 +18,9 @@ args = bert_get_training_arguments("BERT Classifier, version A")
 tb_log_dir = create_tensorboard_run_dir(args.run)
 
 # load training data
-train_X, train_Y = bert_load_training_data(args.max_items)
+train_X, train_Y, val_X, val_Y = bert_load_training_data(
+    max_items=args.max_items, shuffle=True, val_split=args.val_split
+)
 
 # prepare model
 
@@ -46,7 +48,8 @@ model.fit(
     shuffle=True,
     epochs=args.epochs,
     batch_size=args.batch,
-    validation_split=args.val_split,
+    validation_data=(val_X, val_Y),
+    steps_per_epoch=args.samples_per_epoch // args.batch,
     callbacks=[
         bert_create_lr_scheduler(
             max_learn_rate=args.lr_start,
