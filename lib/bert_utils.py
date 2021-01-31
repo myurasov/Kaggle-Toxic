@@ -56,8 +56,6 @@ def bert_build_model(bert_model_dir, max_seq_len):
     x = keras.layers.Dropout(0.5)(x)
     x = keras.layers.Dense(units=768, activation="relu")(x)
     x = keras.layers.Dropout(0.5)(x)
-    x = keras.layers.Dense(units=768, activation="relu")(x)
-    x = keras.layers.Dropout(0.5)(x)
 
     # output
     # sigmoid is preferred for mult-class classification
@@ -102,12 +100,10 @@ def bert_create_lr_scheduler(
 def bert_get_training_arguments(
     description="Train BERT-based classifier",
     RUN="A",
-    LR_DECAY=0.96,
     LR_START=5e-6,
     VAL_SPLIT=0.1,
     BATCH_SIZE=48,
     TOTAL_EPOCHS=50,
-    WARMUP_EPOCHS=10,
     EARLY_STOP_PATIENCE=10,
     SAMPLES_PER_EPOCH=50000,
 ):
@@ -122,7 +118,6 @@ def bert_get_training_arguments(
     parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
     parser.add_argument("--batch", type=int, default=BATCH_SIZE)
     parser.add_argument("--lr_start", type=float, default=LR_START)
-    parser.add_argument("--lr_decay", type=float, default=LR_DECAY)
     parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
     parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
     parser.add_argument("--samples_per_epoch", type=int, default=SAMPLES_PER_EPOCH)

@@ -28,11 +28,7 @@ model = bert_build_model(
 )
 
 model.compile(
-    optimizer=keras.optimizers.Adam(
-        learning_rate=keras.optimizers.schedules.ExponentialDecay(
-            args.lr_start, args.samples_per_epoch, decay_rate=args.lr_decay
-        )
-    ),
+    optimizer=keras.optimizers.Adam(learning_rate=args.lr_start),
     loss=keras.losses.BinaryCrossentropy(),
     metrics=[
         keras.metrics.AUC(
