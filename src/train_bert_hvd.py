@@ -1,79 +1,40 @@
 #!/usr/bin/python
 
-import argparse
 import math
-import os
-import shutil
-from datetime import datetime
-from pprint import pformat, pprint
 
 import horovod.tensorflow.keras as hvd
-import numpy as np
 import tensorflow as tf
 from lib.bert_utils import (
     bert_build_model,
-    bert_create_lr_scheduler,
+    bert_get_training_arguments,
+    bert_load_training_data,
 )
+from lib.train_utils import create_tensorboard_run_dir, save_trained_model
 from tensorflow import keras
 
 from src.config import config
 
-# settings
-
-RUN = "A"
-LR_END = 5e-8
-LR_START = 5e-6
-VAL_SPLIT = 0.1
-BATCH_SIZE = 48
-TOTAL_EPOCHS = 50
-WARMUP_EPOCHS = 10
-EARLY_STOP_PATIENCE = 10
-
-
 # read cli arguments
+args = bert_get_training_arguments("BERT Classifier, version A")
 
-parser = argparse.ArgumentParser(
-    description="Train BERT-based classifier",
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-)
-
-parser.add_argument("--run", type=str, default=RUN)
-parser.add_argument("--max_items", type=int, default=None)
-parser.add_argument("--epochs", type=int, default=TOTAL_EPOCHS)
-parser.add_argument("--warmup_epochs", type=int, default=WARMUP_EPOCHS)
-parser.add_argument("--batch", type=int, default=BATCH_SIZE)
-parser.add_argument("--lr_start", type=int, default=LR_START)
-parser.add_argument("--lr_end", type=int, default=LR_END)
-parser.add_argument("--val_split", type=float, default=VAL_SPLIT)
-parser.add_argument("--early_stop_patience", type=int, default=EARLY_STOP_PATIENCE)
-
-args = parser.parse_args()
-
-
-# region:horovod_init
-
+# Horovod: init
 hvd.init()
 
+# Horovod: Pin GPU to be used to process local rank (one GPU per process)
 gpus = tf.config.experimental.list_physical_devices("GPU")
-print(f"* Horovod: Using {len(gpus)} GPU(s)")
-
-# configure gpus
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
-
-# pin GPU to be used to process local rank
 if gpus:
     tf.config.experimental.set_visible_devices(gpus[hvd.local_rank()], "GPU")
+print(f"* Horovod: Using {len(gpus)} GPU(s)")
 
-
-# adjust number of epochs based on number of GPUs.
+# Horovod: adjust number of epochs based on number of GPUs.
 args.epochs = int(math.ceil(args.epochs / hvd.size()))
 print(f"* Horovod: args.epochs adjusted to {args.epochs}")
 
-# endregion
-
-# display arguments
-print(f"* Arguments:\n{pformat(vars(args))}")
+# Horovod: adjust learning rate based on number of GPUs.
+args.lr_start *= hvd.size()
+print(f"* Horovod: args.lr_start adjusted to {args.lr_start}")
 
 # prepare model
 
@@ -81,56 +42,52 @@ model = bert_build_model(
     bert_model_dir=config["DATA_DIR"] + "/bert", max_seq_len=config["MAX_SEQ_LENGTH"]
 )
 
+optimizer = keras.optimizers.Adam(learning_rate=args.lr_start)
+
+# Horovod: add Horovod Distributed Optimizer
+optimizer = hvd.DistributedOptimizer(optimizer)
+
 model.compile(
-    optimizer=keras.optimizers.Adam(),
+    optimizer=optimizer,
     loss=keras.losses.BinaryCrossentropy(),
     metrics=[
         keras.metrics.AUC(
             multi_label=True,
         )
     ],
+    # Horovod: Specify `experimental_run_tf_function=False` to ensure TensorFlow
+    # uses hvd.DistributedOptimizer() to compute gradients.
+    experimental_run_tf_function=False,
 )
+
+model.summary()
+
+#
 
 # load training data
-train_X = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.X.npy").astype(
-    np.int32
-)
-train_Y = np.load(config["DATA_DIR"] + "/processsed_for_bert/train.Y.npy").astype(
-    np.float32
+train_X, train_Y, val_X, val_Y = bert_load_training_data(
+    max_items=args.max_items, shuffle=True, val_split=args.val_split
 )
 
-# limit max dataset size
-if args.max_items is not None:
-
-    # shuffle before limiting
-    indexes = np.random.permutation(len(train_X))
-    train_X = train_X[indexes]
-    train_Y = train_Y[indexes]
-
-    train_X = train_X[: args.max_items]
-    train_Y = train_Y[: args.max_items]
-
-# tensorboard log dir
-tb_log_dir = f"/app/.tensorboard/{args.run}"
-shutil.rmtree(tb_log_dir, ignore_errors=True)
-
+# create tensorboard log dir
+tb_log_dir = create_tensorboard_run_dir(args.run)
 
 # fit
+
 model.fit(
     x=train_X,
     y=train_Y,
     shuffle=True,
     epochs=args.epochs,
     batch_size=args.batch,
-    validation_split=args.val_split,
+    validation_data=(val_X, val_Y),
+    steps_per_epoch=args.samples_per_epoch // args.batch,
     callbacks=[
-        bert_create_lr_scheduler(
-            max_learn_rate=args.lr_start,
-            end_learn_rate=args.lr_end,
-            warmup_epochs=args.warmup_epochs,
-            epochs_total=args.epochs,
-            horovod_factor=hvd.size()
-        ),
+        # Horovod: broadcast initial variable states from rank 0 to all other processes.
+        # This is necessary to ensure consistent initialization of all workers when
+        # training is started with random weights or restored from a checkpoint.
+        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+        #
         keras.callbacks.EarlyStopping(
             patience=args.early_stop_patience, restore_best_weights=True, verbose=1
         ),
@@ -138,18 +95,9 @@ model.fit(
     ],
 )
 
+# # Horovod: save checkpoints only on worker 0 to prevent other workers from corrupting them.
+# if hvd.rank() == 0:
+#     model.callbacks.append(keras.callbacks.ModelCheckpoint("./checkpoint-{epoch}.h5"))
+
 # save trained model
-
-output_dir = config["DATA_DIR"] + "/saved_models"
-model_path = output_dir + f"/model_bert.{args.run}.tf"
-os.makedirs(output_dir, exist_ok=True)
-model.save(model_path, overwrite=True, save_format="tf", include_optimizer=True)
-print(f"* Model saved to {model_path}")
-
-# save run info for later reference
-
-info_path = model_path + "_info.txt"
-print(
-    f"Date:\n\n{datetime.now()} UTC\n\nArguments:\n\n{pformat(vars(args))}",
-    file=open(info_path, "w"),
-)
+save_trained_model(model=model, run=args.run, info=vars(args))
