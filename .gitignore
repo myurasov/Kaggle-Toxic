@@ -9,3 +9,4 @@ __*/
 __*.*
 kaggle.json
 docker/res/root/.jupyter/migrated
+.vscode/.ropeproject
