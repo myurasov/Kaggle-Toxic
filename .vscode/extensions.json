@@ -7,7 +7,8 @@
 		"ms-python.vscode-pylance",
 		"ms-python.python",
 		"ms-vscode-remote.remote-containers",
-		"ms-vscode-remote.remote-ssh"
+		"ms-vscode-remote.remote-ssh",
+		"ms-azuretools.vscode-docker"
 	],
 	// List of extensions recommended by VS Code that should not be recommended for users of this workspace.
 	"unwantedRecommendations": [
