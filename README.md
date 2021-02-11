@@ -29,17 +29,20 @@ Options available:
 --run RUN
 --max_items MAX_ITEMS
 --epochs EPOCHS
---warmup_epochs WARMUP_EPOCHS
 --batch BATCH
 --lr_start LR_START
---lr_end LR_END
 --val_split VAL_SPLIT
 --early_stop_patience EARLY_STOP_PATIENCE
+--samples_per_epoch SAMPLES_PER_EPOCH
 </pre>
+
+To run with Horovod:
+
+`$ docker/docker.sh "src/train_bert-[variant].py [arguments]"`
 
 ### Generating submission with BERT-based Classifier
 
-`$ docker/docker.sh "src/infer_bert.py  [arguments]"`
+`$ docker/docker.sh --no-build --no-kill --gpus='"device=1,2"' "horovodrun -np ### src/train_bert_hvd.py"`
 
 Options available:
 

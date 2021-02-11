@@ -17,16 +17,28 @@ from src.config import config
 # read cli arguments
 args = bert_get_training_arguments("BERT Classifier, version A")
 
+# ##
+# args.run = "A-hvd"
+# args.max_items = 7040
+# args.epochs = 3
+# args.samples_per_epoch = 6336
+# args.batch = 64
+# print(f"* Arguments:\n{(vars(args))}")
+# ##
+
 # Horovod: init
 hvd.init()
 
-# Horovod: Pin GPU to be used to process local rank (one GPU per process)
+# Horovod: configure GPUs
 gpus = tf.config.experimental.list_physical_devices("GPU")
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
+print(f"* Horovod: Using {len(gpus)} GPU(s)")
+
+# Horovod: Pin GPU to be used to process local rank (one GPU per process)
 if gpus:
     tf.config.experimental.set_visible_devices(gpus[hvd.local_rank()], "GPU")
-print(f"* Horovod: Using {len(gpus)} GPU(s)")
+print(f"* Horovod: Rank: {hvd.rank()}")
 
 # Horovod: adjust number of epochs based on number of GPUs.
 args.epochs = int(math.ceil(args.epochs / hvd.size()))
@@ -69,8 +81,18 @@ train_X, train_Y, val_X, val_Y = bert_load_training_data(
     max_items=args.max_items, shuffle=True, val_split=args.val_split
 )
 
-# create tensorboard log dir
-tb_log_dir = create_tensorboard_run_dir(args.run)
+callbacks = [
+    hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+    keras.callbacks.EarlyStopping(
+        patience=args.early_stop_patience, restore_best_weights=True, verbose=1
+    ),
+]
+
+if 0 == hvd.rank():
+    # create tensorboard log dir
+    tb_log_dir = create_tensorboard_run_dir(args.run)
+    # log to tensorboard
+    callbacks.append(keras.callbacks.TensorBoard(log_dir=tb_log_dir))
 
 # fit
 
@@ -82,22 +104,10 @@ model.fit(
     batch_size=args.batch,
     validation_data=(val_X, val_Y),
     steps_per_epoch=args.samples_per_epoch // args.batch,
-    callbacks=[
-        # Horovod: broadcast initial variable states from rank 0 to all other processes.
-        # This is necessary to ensure consistent initialization of all workers when
-        # training is started with random weights or restored from a checkpoint.
-        hvd.callbacks.BroadcastGlobalVariablesCallback(0),
-        #
-        keras.callbacks.EarlyStopping(
-            patience=args.early_stop_patience, restore_best_weights=True, verbose=1
-        ),
-        keras.callbacks.TensorBoard(log_dir=tb_log_dir),
-    ],
+    verbose=1 if 0 == hvd.rank() else 0,
+    callbacks=callbacks,
 )
 
-# # Horovod: save checkpoints only on worker 0 to prevent other workers from corrupting them.
-# if hvd.rank() == 0:
-#     model.callbacks.append(keras.callbacks.ModelCheckpoint("./checkpoint-{epoch}.h5"))
-
 # save trained model
-save_trained_model(model=model, run=args.run, info=vars(args))
+if 0 == hvd.rank():
+    save_trained_model(model=model, run=args.run, info=vars(args))
