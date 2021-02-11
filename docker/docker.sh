@@ -64,6 +64,7 @@ if [ -z "$CMD" ]
     PORT_MAPPINGS="-p ${JUPYTER_PORT}:8888  -p ${TENSORBORAD_PORT}:6006"
 fi
 
-docker run --gpus="${GPUS}" --rm "-${DOCKER_RUN_FLAGS}" --name="${IMAGE_NAME}" \
+docker run --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 \
+  --gpus="${GPUS}" --rm "-${DOCKER_RUN_FLAGS}" --name="${IMAGE_NAME}" \
   -v "${UP1_DIR}:/app" $PORT_MAPPINGS \
   $IMAGE_NAME $CMD
