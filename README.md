@@ -42,7 +42,7 @@ To run with Horovod:
 
 ### Generating submission with BERT-based Classifier
 
-`$ docker/docker.sh --no-build --no-kill --gpus='"device=1,2"' "horovodrun -np ### src/train_bert_hvd.py"`
+`$ docker/docker.sh --gpus='"device=0,1,2,###"' "horovodrun -np ### src/train_bert_hvd.py"`
 
 Options available:
 

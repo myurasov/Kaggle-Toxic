@@ -17,15 +17,6 @@ from src.config import config
 # read cli arguments
 args = bert_get_training_arguments("BERT Classifier, version A")
 
-# ##
-# args.run = "A-hvd"
-# args.max_items = 7040
-# args.epochs = 3
-# args.samples_per_epoch = 6336
-# args.batch = 64
-# print(f"* Arguments:\n{(vars(args))}")
-# ##
-
 # Horovod: init
 hvd.init()
 
@@ -33,7 +24,8 @@ hvd.init()
 gpus = tf.config.experimental.list_physical_devices("GPU")
 for gpu in gpus:
     tf.config.experimental.set_memory_growth(gpu, True)
-print(f"* Horovod: Using {len(gpus)} GPU(s)")
+
+print(f"* Horovod: Using {hvd.size()} out of {len(gpus)} GPU{'s' if len(gpus) else ''}")
 
 # Horovod: Pin GPU to be used to process local rank (one GPU per process)
 if gpus:
@@ -83,6 +75,8 @@ train_X, train_Y, val_X, val_Y = bert_load_training_data(
 
 callbacks = [
     hvd.callbacks.BroadcastGlobalVariablesCallback(0),
+    # TODO: adjust early stopping epochs
+    # TODO: should it be only moved to rank 0?
     keras.callbacks.EarlyStopping(
         patience=args.early_stop_patience, restore_best_weights=True, verbose=1
     ),
