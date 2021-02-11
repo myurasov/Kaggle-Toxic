@@ -70,32 +70,6 @@ def bert_build_model(bert_model_dir, max_seq_len):
     return model
 
 
-def bert_create_lr_scheduler(
-    max_learn_rate=1e-5,
-    end_learn_rate=1e-7,
-    warmup_epochs=20,
-    epochs_total=50,
-    horovod_factor=1.0,  # if using horovod, lr should be multiplied by number of GPUs
-):
-    """
-    Create LR scheduler for BERT-based multiclass classifier
-    @see https://www.desmos.com/calculator/klvwfuidie
-    """
-
-    def _lr_scheduler(epoch):
-        if epoch < warmup_epochs:
-            res = (max_learn_rate / warmup_epochs) * (epoch + 1)
-        else:
-            res = max_learn_rate * math.exp(
-                math.log(end_learn_rate / max_learn_rate)
-                * (epoch - warmup_epochs + 1)
-                / (epochs_total - warmup_epochs + 1)
-            )
-        return float(res)
-
-    return keras.callbacks.LearningRateScheduler(_lr_scheduler, verbose=1)
-
-
 # read cli arguments for bert training
 def bert_get_training_arguments(
     description="Train BERT-based classifier",
