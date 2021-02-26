@@ -20,7 +20,7 @@ https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge/
 
 ### Train BERT-based Classifier
 
-`$ docker/docker.sh "src/train_bert-[variant].py [arguments]"`
+`$ docker/docker.sh "src/train_bert.py [arguments]"`
 
 Options available:
 
@@ -38,11 +38,11 @@ Options available:
 
 To run with Horovod:
 
-`$ docker/docker.sh "src/train_bert-[variant].py [arguments]"`
+`$ docker/docker.sh --gpus='"device=0,1,2,###"' "horovodrun -np ### src/train_bert_hvd.py"`
 
 ### Generating submission with BERT-based Classifier
 
-`$ docker/docker.sh --gpus='"device=0,1,2,###"' "horovodrun -np ### src/train_bert_hvd.py"`
+`$ docker/docker.sh "src/infer_bert.py"`
 
 Options available:
 
